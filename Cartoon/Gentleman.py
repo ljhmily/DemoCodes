@@ -1,39 +1,60 @@
-#coding:utf-8
+# coding:utf-8
 
-import urllib2
+import urllib.request
 import re
 import zlib
-from Cartoon import *
+import os
+import sys
+
+from DemoCodes.Cartoon.Cartoon import *
+
 
 class Gentleman:
     def __init__(self, url, path):
+        print(url, path)
         exists = os.path.exists(path)
+        #print(os.path.abspath(os.path.curdir))
         if not exists:
-            print "文件路径无效."
-            exit(0)
+            print("文件路径无效.尝试创建指定路径")
+            try:
+                os.mkdir(os.path.join(os.path.abspath(os.path.curdir), path))
+                if os.path.exists(path):
+                    print("创建完成")
+            except Exception as e:
+                print("创建失败, ", str(e))
+                exit(0)
 
         self.base_url = url
         self.path = path
         content = self.get_content(url)
+        # print("init content:",content)
 
         self.page_url_arr = self.get_page_url_arr(content)
 
     def get_content(self, url):
         # 打开网页
         try:
-            request = urllib2.Request(url)
-            response = urllib2.urlopen(request, timeout=20)
+            user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
+            headers = {'User-Agent': user_agent}
+            request = urllib.request.Request(url, headers=headers)
+            #print(request)
+            response = urllib.request.urlopen(request, timeout=60)
+            #print("info", response.info().get('Content-Encoding'))
 
-            # 将网页内容解压缩
-            decompressed_data = zlib.decompress(response.read(), 16 + zlib.MAX_WBITS)
+            if response.info().get('Content-Encoding') == 'gzip':
 
-            # 网页编码格式为 gb2312
-            content = decompressed_data.decode('gb2312', 'ignore')
+                # 将网页内容解压缩
+                decompressed_data = zlib.decompress(response.read(), 16 + zlib.MAX_WBITS)
+                # 网页编码格式为 gb2312
+                content = decompressed_data.decode('gb2312', 'ignore')
+            else:
+                content = response.read().decode('gb2312', 'ignore')
+            # print("content:",content)
             # print content
             return content
-        except Exception, e:
-            print e
-            print "打开网页: " + url + "失败."
+        except Exception as e:
+            print(str(e))
+            print("打开网页: " + url + "失败.")
             return None
 
     def get_page_url_arr(self, content):
@@ -56,14 +77,14 @@ class Gentleman:
             arr.append(page_url)
 
         # print arr
-        print "total pages: " + str(len(arr))
+        print("total pages: " + str(len(arr)))
         return arr
 
     def get_cartoon_arr(self, url):
         # 获取每一页所包含的漫画
         content = self.get_content(url)
         if not content:
-            print "获取网页失败."
+            print("获取网页失败.")
             return None
 
         # 先获取包含漫画信息的内容
@@ -87,10 +108,11 @@ class Gentleman:
         # 遍历每一页的内容
         for i in range(0, len(self.page_url_arr)):
             # 获取每一页漫画的url
-            cartoon_arr = self.get_cartoon_arr(self.page_url_arr[i])
-            print "page " + str(i + 1) + ":"
-            print cartoon_arr
-            for j in range(0, len(cartoon_arr)):
-                cartoon = Cartoon(cartoon_arr[j])
+            cartoon_array = self.get_cartoon_arr(self.page_url_arr[i])
+            print("page " + str(i + 1) + ":")
+            print("arr:",cartoon_array)
+            for j in range(0, len(cartoon_array)):
+                print(j, cartoon_array[j])
+                cartoon = Cartoon(cartoon_array[j])
                 cartoon.save(self.path)
-            print "======= page " + str(i + 1) + " fetch finished ======="
+            print("======= page " + str(i + 1) + " fetch finished =======")
