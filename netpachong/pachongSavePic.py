@@ -23,14 +23,14 @@ class SavePic:
                            'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.110 Safari/537.36')
         request.add_header('GET', url)
 
+        print("save pic: %s" % url)
         try:
             response = urllib.request.urlopen(request, timeout=180)
             data = response.read()
             file = open(path, 'wb')
             file.write(data)
             file.close()
-            print("save pic: %s, success" % url)
+            print("==>finished.")
         except Exception as e:
-            print(str(e))
-            print("pic save failed" % url)
+            print("==>failed. Error: %s" % str(e))
             return None
