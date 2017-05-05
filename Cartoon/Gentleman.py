@@ -11,9 +11,8 @@ from DemoCodes.Cartoon.Cartoon import *
 
 class Gentleman:
     def __init__(self, url, path):
-        print(url, path)
+        print("Comic URL: ", url, "\nBase directory", path)
         exists = os.path.exists(path)
-        #print(os.path.abspath(os.path.curdir))
         if not exists:
             print("文件路径无效.尝试创建指定路径")
             try:
@@ -23,12 +22,12 @@ class Gentleman:
             except Exception as e:
                 print("创建失败, ", str(e))
                 exit(0)
+        else:
+            print("文件路径已存在")
 
         self.base_url = url
         self.path = path
         content = self.get_content(url)
-        # print("init content:",content)
-
         self.page_url_arr = self.get_page_url_arr(content)
 
     def get_content(self, url):
@@ -37,24 +36,19 @@ class Gentleman:
             user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
             headers = {'User-Agent': user_agent}
             request = urllib.request.Request(url, headers=headers)
-            #print(request)
-            response = urllib.request.urlopen(request, timeout=60)
-            #print("info", response.info().get('Content-Encoding'))
+            response = urllib.request.urlopen(request, timeout=180)
 
             if response.info().get('Content-Encoding') == 'gzip':
-
                 # 将网页内容解压缩
                 decompressed_data = zlib.decompress(response.read(), 16 + zlib.MAX_WBITS)
                 # 网页编码格式为 gb2312
                 content = decompressed_data.decode('gb2312', 'ignore')
             else:
                 content = response.read().decode('gb2312', 'ignore')
-            # print("content:",content)
-            # print content
+            print("open url: %s. success" % url)
             return content
         except Exception as e:
-            print(str(e))
-            print("打开网页: " + url + "失败.")
+            print("open url: " + url + " failed. Error: " + str(e))
             return None
 
     def get_page_url_arr(self, content):
@@ -64,7 +58,6 @@ class Gentleman:
         pattern = re.compile('name=\'sldd\'.*?>(.*?)</select>', re.S)
         result = re.search(pattern, content)
         option_list = result.groups(1)
-        # print option_list
 
         # 再获取每一页的url
         pattern = re.compile('value=\'(.*?)\'.*?</option>', re.S)
@@ -72,11 +65,9 @@ class Gentleman:
 
         arr = []
         for item in items:
-            # print item
             page_url = self.base_url + '/' + item
             arr.append(page_url)
 
-        # print arr
         print("total pages: " + str(len(arr)))
         return arr
 
@@ -98,7 +89,6 @@ class Gentleman:
 
         arr = []
         for item in items:
-            # print item
             page_url = self.base_url + '/' + item
             arr.append(page_url)
 
@@ -109,10 +99,10 @@ class Gentleman:
         for i in range(0, len(self.page_url_arr)):
             # 获取每一页漫画的url
             cartoon_array = self.get_cartoon_arr(self.page_url_arr[i])
-            print("page " + str(i + 1) + ":")
-            print("arr:",cartoon_array)
+            print("open page " + str(i + 1) + ":")
+            print("page list: ", cartoon_array)
             for j in range(0, len(cartoon_array)):
-                print(j, cartoon_array[j])
+                print("pic page ", j, cartoon_array[j])
                 cartoon = Cartoon(cartoon_array[j])
                 cartoon.save(self.path)
             print("======= page " + str(i + 1) + " fetch finished =======")

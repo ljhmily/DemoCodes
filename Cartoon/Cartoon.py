@@ -7,19 +7,21 @@ import os
 
 from DemoCodes.Cartoon.Gentleman import *
 
+
 class Cartoon:
     def __init__(self, url):
         self.base_url = "http://www.xeall.com/shenshi"
         self.url = url
-        #print("c:", url)
 
         content = self.get_content(self.url)
-        #print("c content:", content)
         if not content:
             print("Comic init failed.")
             return
 
         self.title = self.get_title(content)
+        if re.search(r'[\/|\||\\|\*|\"|\>|\<|\?|\:]', self.title):
+            self.title = re.sub(r'[\/|\||\\|\*|\"|\>|\<\?|\:]', '_', self.title, 0)
+            print("路径存在非法字符, 替换为：", self.title)
         self.page_url_arr = self.get_page_url_arr(content)
 
         # 标记每次下载图片时,是否先检查本地已存在对应图片
@@ -31,22 +33,19 @@ class Cartoon:
             user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
             headers = {'User-Agent': user_agent}
             request = urllib.request.Request(url, headers=headers)
-            #print(request)
-            response = urllib.request.urlopen(request, timeout=60)
-            #print("info", response.info().get('Content-Encoding'))
+            response = urllib.request.urlopen(request, timeout=180)
 
             if response.info().get('Content-Encoding') == 'gzip':
-
                 # 将网页内容解压缩
                 decompressed_data = zlib.decompress(response.read(), 16 + zlib.MAX_WBITS)
                 # 网页编码格式为 gb2312
                 content = decompressed_data.decode('gb2312', 'ignore')
             else:
                 content = response.read().decode('gb2312', 'ignore')
+            print("=>open url: " + url)
             return content
         except Exception as e:
-            print(str(e))
-            print("open url: " + url + " failed.")
+            print("=>failed. Error: " + str(e))
             return None
 
     def get_title(self, content):
@@ -96,8 +95,11 @@ class Cartoon:
 
         if result:
             pic = result.groups(1)
-            # print  "Picture url: " + pic[0]
-            return pic[0]
+            if re.search(r'\ ', pic[0]):
+                pic = re.sub(r'\ ', '%20', pic[0], 0)
+                return pic
+            else:
+                return pic[0]
         else:
             print("获取图片地址失败。")
             print("url: " + page_url)
@@ -116,7 +118,7 @@ class Cartoon:
         # 获取图片时会偶尔出现请求超时的情况,会导致一部漫画存在部分缺失,此时文件夹中已存在大部分图片
         # 当前已存在图片大于一定数量时判定为存在少数缺页情况,这时候通过判断只对未存在图片进行请求
         if len(list) >= (len(self.page_url_arr) / 2):
-            print("每张图片下载前先检查本地是否已存在.")
+            print("图片未完全下载, 检测每张图片是否存在.")
             self.need_check_pic = True
 
         for i in range(0, len(self.page_url_arr)):
@@ -141,7 +143,10 @@ class Cartoon:
         exists = os.path.exists(path)
         if not exists:
             print("创建文件夹")
-            os.makedirs(path)
+            try:
+                os.makedirs(path)
+            except Exception as e:
+                print(str(e))
         else:
             print("文件夹已存在")
 
@@ -154,14 +159,13 @@ class Cartoon:
 
         try:
             print("save pic url:" + pic_url)
-            resp = urllib.request.urlopen(req, timeout=20)
+            resp = urllib.request.urlopen(req, timeout=180)
             data = resp.read()
             # print data
 
             fp = open(path, "wb")
             fp.write(data)
-            fp.close
-            print("save pic finished.")
+            fp.close()
+            print("==>finished.")
         except Exception as e:
-            print(str(e))
-            print("save pic: " + pic_url + " failed.")
+            print("==>failed. Error: " + str(e))
