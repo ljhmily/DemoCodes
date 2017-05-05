@@ -20,7 +20,7 @@ class SavePic:
     def save_picture(self, url, path):
         request = urllib.request.Request(url)
         request.add_header('User-Agent',
-                           'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.110 Safari/537.36')
+                           'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36')
         request.add_header('GET', url)
 
         print("save pic: %s" % url)
