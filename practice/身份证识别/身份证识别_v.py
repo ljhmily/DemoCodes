@@ -30,11 +30,11 @@ def idparse(id):
         city = idict[code_prov + code_city + "00"]
         county = idict[code_prov + code_city + code_county]
         birth = (code_year, code_month, code_day)
+        print(birth)
         sex = ["女", "男"][int(code_sex) % 2]
         crc = id_check(id)
     except Exception as e:
         return str(e)
-
     return (prov, city, county, birth, sex, crc,)
 
 
@@ -48,10 +48,10 @@ def id_check(id):
             break
     result = (12 - (sum % 11)) % 11
     if result == 10:
-        crc = "X"
+        crc1 = "X"
     else:
-        crc = result
-    if int(id[17]) == crc:
+        crc1 = result
+    if str(id[17]) == str(crc1):
         res = True
     else:
         res = False
@@ -70,7 +70,7 @@ def main(ID):
     print("省    : %s" % info[0])
     print("市/区 : %s" % info[1])
     print("县    : %s" % info[2])
-    print("出生  : %s年%s月%s日" % info[3])
+    print("出生  : %s年%s月%s日" % (info[3]))
     print("性别  : %s" % info[4])
     print("合法性: %s" % info[5])
 
