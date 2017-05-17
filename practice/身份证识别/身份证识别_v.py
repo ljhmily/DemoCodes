@@ -48,10 +48,10 @@ def id_check(id):
             break
     result = (12 - (sum % 11)) % 11
     if result == 10:
-        crc1 = "X"
+        crc = "X"
     else:
-        crc1 = result
-    if id[17] == crc1:
+        crc = result
+    if int(id[17]) == crc:
         res = True
     else:
         res = False
