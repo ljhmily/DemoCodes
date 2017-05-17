@@ -38,12 +38,12 @@ serial = (7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2)
 sum = 0
 for n in range(len(id) - 1):
     if n < 17:
-        sum = sum + int(id[n]) ** serial[n]
+        sum = sum + int(id[n]) * serial[n]
     else:
         break
-#mod = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-#end = (1, 0, "X", 9, 8, 7, 6, 5, 4, 3, 2)
-result = (12 - (sum % 11))
+# mod = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+# end = (1, 0, "X", 9, 8, 7, 6, 5, 4, 3, 2)
+result = (12 - (sum % 11)) % 11
 if result == 10:
     print("X")
 else:

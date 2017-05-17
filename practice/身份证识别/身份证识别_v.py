@@ -43,10 +43,10 @@ def id_check(id):
     sum = 0
     for n in range(len(id) - 1):
         if n < 17:
-            sum = sum + int(id[n]) ** serial[n]
+            sum = sum + int(id[n]) * serial[n]
         else:
             break
-    result = (12 - (sum % 11))
+    result = (12 - (sum % 11)) % 11
     if result == 10:
         crc1 = "X"
     else:
